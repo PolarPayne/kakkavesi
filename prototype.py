@@ -4,7 +4,7 @@ import numpy as np
 
 
 
-def build_prototype_week(activity, temperature, temperature_thresh, precip, precip_thresh, percentile, resolution):
+def build_prototype_week(activity, temperature, temperature_thresh, precip, precip_thresh, percentile):
 
     '''
     "dp" means 'datapoint'
@@ -38,9 +38,7 @@ def build_prototype_week(activity, temperature, temperature_thresh, precip, prec
         "q : float in range of [0,100] (or sequence of floats)
         Percentile to compute which must be between 0 and 100 inclusive."
 
-    resolution:
-        the number of data points in a given day
-        
+
     ---
     returns:
         average, percentile
@@ -52,15 +50,18 @@ def build_prototype_week(activity, temperature, temperature_thresh, precip, prec
     NOTE:
 
     ***     assumption is that activity array has nans for missing values. 
+                        and that temp/precip arrays have nans for missing values
     in calculating averages/percentiles, nans are not included    ***
 
-    
+   TODO
+   handle multiple activity vectors (i.e. multiple pump stations)
     
     '''
     c = temperature
     c = c.astype('float').reshape(weeks, 7, 1) #reshape so can be multiplied
     act = activity
     act = act.astype('float')
+    resolution = act.shape[2]
     prec = precip
     prec = prec.astype('float').reshape(weeks, 7, 1)#reshape so can be multiplied
 
@@ -105,9 +106,7 @@ act[act_nans == True] = np.nan
 
 c = np.random.randint(-5, 5, weeks*7).reshape(weeks, 7, 1)
 prec = np.random.randint(0, 10, weeks*7).reshape(weeks, 7, 1)
-a,s = build_prototype_week(act, c, -1, prec, 7, [2.5, 97.5], dp)
+a,s = build_prototype_week(act, c, -1, prec, 7, [2.5, 97.5])
 print a, len(a)
 print
 print s
-        
-
