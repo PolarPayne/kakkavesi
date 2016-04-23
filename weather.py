@@ -14,7 +14,7 @@ def group(lst, n):
     return list(zip(*[lst[i::n] for i in range(n)]))
 
 
-def weather(api_key, start_time=None, end_time=None):
+def weather(api_key, start_time=None, end_time=None, place="Helsinki"):
     """
     Returns a dictionary that looks like
     -> {date: {"rrday": float, "snow": float, "tmin": float, "tmax": float, "tday": float}, ...}
@@ -29,7 +29,7 @@ def weather(api_key, start_time=None, end_time=None):
     """
     payload = {"request": "getFeature",
                "storedquery_id": "fmi::observations::weather::daily::simple",
-               "place":"Helsinki",
+               "place": place,
                }
 
     if start_time:
