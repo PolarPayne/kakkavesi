@@ -14,36 +14,56 @@ def group(lst, n):
     return list(zip(*[lst[i::n] for i in range(n)]))
 
 
-def weather(api_key):
+def weather(api_key, start_time=None, end_time=None):
     """
-    :return [(long, lat, unix_time), (temperature, precipitation_amount), ...]
+    Returns a dictionary that looks like
+    -> {date: {"rrday": float, "snow": float, "tmin": float, "tmax": float, "tday": float}, ...}
+
+    Where:
+    date = yyyy-mm-dd
+    rrday = precipitation during last 24 hours
+    snow = snow depth
+    tmin = min temperature
+    tmax = max temperature
+    tday = avg temperature
     """
     payload = {"request": "getFeature",
-               "storedquery_id": "fmi::forecast::hirlam::surface::cities::multipointcoverage",
-               "parameters": "temperature,precipitationAmount",
+               "storedquery_id": "fmi::observations::weather::daily::simple",
                "place":"Helsinki",
-               "bbox": "24,59,26,60",
                }
+
+    if start_time:
+        payload["starttime"] = start_time
+    if end_time:
+        payload["endtime"] = end_time
 
     r = requests.get("http://data.fmi.fi/fmi-apikey/" + api_key +"/wfs", params=payload)
 
     root = ET.fromstring(r.text)
 
+    data = ""
 
     for i in root.iter():
-        if "positions" in i.tag:
-            positions = i.text
-        if "doubleOrNilReasonTupleList" in i.tag:
-            values = i.text
+        if "Time" in i.tag:
+            data += i.text[:10] + " "
+        if "ParameterName" in i.tag:
+            data += i.text + " "
+        if "ParameterValue" in i.tag:
+            data += i.text + "\n"
 
-    positions = group(positions.split(), 3)
-    values = group(values.split(), 2)
+    data = group(data.split(), 3)
 
-    return list(zip(positions, values))
+    out = {}
+    for i in data:
+        if i[0] not in out:
+            out[i[0]] = {}
+        out[i[0]][i[1]] = float(i[2])
+
+    return out
 
 if __name__ == "__main__":
     from sys import argv
-    data = weather(argv[1])
+    data = weather(argv[1], "2016-01-01", "2016-04-01")
 
-    for i in data:
-        print(i)
+    for i, j in data.items():
+        print(i, j)
