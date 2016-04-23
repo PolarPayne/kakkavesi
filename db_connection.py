@@ -1,4 +1,5 @@
 import pymssql
+import pydotplus as pydot
 
 _SERVER = '10.144.72.11:1433'
 _USER = 'devuser1'
@@ -14,12 +15,9 @@ cursor.execute("SELECT code, next_station FROM [AWR].[dbo].[HSY_TARGETS]"
 
 rows = cursor.fetchall()
 
-import pydotplus as pydot
-import tqdm
-
 tree = {}
 
-for i in tqdm.tqdm(rows):
+for i in rows:
     fr, to = i[0], "VKM" if "VKM" in i[1] else i[1]
     if to not in tree:
         tree[to] = []
@@ -27,12 +25,12 @@ for i in tqdm.tqdm(rows):
 
 
 # Let's make some happy trees
-t = pydot.Dot(graph_type="digraph", splines="line", layout="circo")
+t = pydot.Dot(graph_type="digraph", splines="line")
 
-for i in tqdm.tqdm(tree):
+for i in tree:
     t.add_node(pydot.Node(i))
 
-for i, j in tqdm.tqdm(tree.items()):
+for i, j in tree.items():
     for k in j:
         t.add_edge(pydot.Edge(k, i))
 
