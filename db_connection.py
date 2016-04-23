@@ -1,5 +1,4 @@
 import pymssql
-import pydotplus as pydot
 
 _SERVER = '10.144.72.11:1433'
 _USER = 'devuser1'
@@ -8,6 +7,7 @@ _PASSWORD = 'devuser123'
 connection = pymssql.connect(_SERVER, _USER, _PASSWORD)
 
 def draw_tree(name):
+    import pydotplus as pydot
     cursor = connection.cursor()
     cursor.execute("SELECT code, next_station FROM [AWR].[dbo].[HSY_TARGETS]"
                    #"WHERE target_type = 'JVP'"
