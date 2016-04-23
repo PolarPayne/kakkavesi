@@ -1,5 +1,4 @@
 import xml.etree.ElementTree as ET
-import json
 
 def precipitation_forecasts(name):
     tree = ET.parse("ravake/HSY_" + name + ".xml")
