@@ -63,7 +63,15 @@ def weather(api_key, start_time=None, end_time=None):
 
 if __name__ == "__main__":
     from sys import argv
-    data = weather(argv[1], "2016-01-01", "2016-04-01")
+    data = weather(argv[1], "2015-01-01", "2015-12-31")
 
     for i, j in data.items():
         print(i, j)
+
+    for i in range(1, 15):
+        print("2015-11-" + str(i).zfill(2), data["2015-11-" + str(i).zfill(2)])
+
+    ma = 0
+    for i, j in data.items():
+        ma = j["rrday"] if j["rrday"] > ma else ma
+    print(ma)

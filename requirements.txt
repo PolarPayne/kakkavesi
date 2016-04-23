@@ -1,0 +1,7 @@
+networkx
+pydotplus
+flask
+pymssql
+PIL
+numpy
+requests

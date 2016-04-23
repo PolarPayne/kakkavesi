@@ -6,8 +6,12 @@ _PASSWORD = 'devuser123'
 
 DATA = {}
 
+def listPumps():
+    return sorted(list(DATA.keys()))
+
 def getRainInmm(id, year, month, day):
-    if not id in DATA: raise "id not in data"
+    if not id in DATA:
+        raise "id not in data"
     if not year in DATA[id]:
         return 0
     if not month in DATA[id][year]:
@@ -23,7 +27,7 @@ cursor.execute("SELECT * FROM [AWR].[dbo].[HSY_RAINFALL_1H]")
 print(cursor.description)
 rows = cursor.fetchall()
 
-print(len(rows))
+#print(len(rows))
 
 ID_COL = 0
 RAIN_COL = 2
@@ -45,4 +49,4 @@ for row in rows:
 
 # test
 # Data from 01/2015 .. 03/2016 (excl. 11/2015)
-print(getRainInmm("VuoSaP5", 2016, 1, 28))
+#print(getRainInmm("VuoSaP5", 2015, 1, 28))
