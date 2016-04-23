@@ -2,7 +2,6 @@ from db_connection import connection
 import datetime
 import re
 
-
 '''
 Represents the HSY_TARGETS table. See 'HSY_Targets taulukuvaus 2016.04.21.xlsx'.
 '''
