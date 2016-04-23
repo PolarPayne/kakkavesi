@@ -38,9 +38,7 @@ def build_prototype_week(activity, temperature, temperature_thresh, precip, prec
         "q : float in range of [0,100] (or sequence of floats)
         Percentile to compute which must be between 0 and 100 inclusive."
 
-    resolution:
-        the number of data points in a given day
-        
+
     ---
     returns:
         average, percentile
