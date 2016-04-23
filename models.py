@@ -25,7 +25,8 @@ class Target:
             return data[0][0]
         else:
             return 4.0
-
+        
+        
 
 
 
@@ -62,9 +63,6 @@ def get_pump_data(station ,hours):
 def get_target(station):
     station = station if not re.match(r'^JVP.*$', station) else station.replace('JVP', '')
     return _fetch_all_and_make_objects(Target,  "SELECT * FROM [AWR].[dbo].[HSY_TARGETS] WHERE Code LIKE '"+ station +"'")[0]
-
-
-
 
 '''
 Get pump station data from HSY_MES_PUMP_1H for the time period beetween start and end. End datetime is included, start is not.
@@ -110,3 +108,31 @@ def _set_model_attrs(obj, keys, vals):
     for i in range(0, len(keys)):
         setattr(obj, keys[i], vals[i])
 
+
+def interpolate_pump_runtimes(pump_data):
+    if len(pump_data) > 0 and isinstance(pump_data[0], MesPumpHour):
+       arr = [x.p1_run_time for x in pump_data]
+    else:
+        arr= list(pump_data)
+
+    for i in range(len(arr)):
+        if not type(arr[i]) == float:
+            j = i
+            last = arr[i-1] if i > 0 else 0.0
+
+            while j < len(arr) - 1:
+                if type(arr[j]) == float:
+                    break
+
+                j += 1
+
+            if type(arr[j]) != float:
+                arr[j] = 0.0
+            for k in range(i, j):
+                d = (arr[j]-last)/float(j - (i-1))
+                arr[k] = last + d*(k-(i-1))
+
+            i = j
+
+
+    return arr
