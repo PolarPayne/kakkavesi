@@ -29,7 +29,7 @@ def weather(api_key, start_time=None, end_time=None, place="Helsinki"):
     """
     payload = {"request": "getFeature",
                "storedquery_id": "fmi::observations::weather::daily::simple",
-               "place":place,
+               "place": place,
                }
 
     if start_time:
