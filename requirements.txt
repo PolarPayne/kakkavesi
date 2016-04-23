@@ -4,3 +4,4 @@ flask
 pymssql
 PIL
 numpy
+requests
