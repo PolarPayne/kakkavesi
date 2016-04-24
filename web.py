@@ -1,7 +1,8 @@
-from flask import Flask, send_file, abort
+from flask import Flask, abort
+import datetime
 
 from plot_pump_averages import make_plot
-import datetime
+import station_network
 
 app = Flask(__name__)
 
@@ -21,6 +22,15 @@ def avg(code, start_date, end_date):
         #    abort(404)
     return "tmp/" + filename
     # return send_file("tmp/" + filename, mimetype='image/png')
+
+
+@app.route("/neighbors/<code>/<int:depth>")
+def neighbors(code, depth=1):
+    stations = station_network.StationNetwork()
+    ls = []
+    for i in stations.neighbors(code, depth):
+        ls.append(str(i.code))
+    return "[" + ",".join(ls) + "]"
 
 if __name__ == "__main__":
     app.run(debug=True)
