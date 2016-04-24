@@ -43,7 +43,7 @@ def build_prototype_week(activity, temperature, temperature_thresh, precip, prec
     returns:
         average, percentile
         each is of shape 7 * resolution, where resolution = number of data points in a day
-        the first 'resolution' number of points correspond to average/percentile for all Monday data points
+        the first 'resolution' number of points correspond to average/percentile for all Sunday data points
 
     ##################
 
