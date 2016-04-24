@@ -23,7 +23,6 @@ def avg(code, start_date, end_date):
     return "tmp/" + filename
     # return send_file("tmp/" + filename, mimetype='image/png')
 
-
 @app.route("/neighbors/<code>/<int:depth>")
 def neighbors(code, depth=1):
     stations = station_network.StationNetwork()
