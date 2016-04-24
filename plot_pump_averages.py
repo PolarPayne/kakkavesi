@@ -87,6 +87,7 @@ def _set_model_attrs(obj, keys, vals):
 def get_daily_pump_data(id, data_start_date, data_end_date):
     pump_data = []
     icurrent = data_start_date
+    if id not in listPumps(): raise "unknown id"
     while True:
         inext = icurrent + datetime.timedelta(days=90)
         time.sleep(0.2)
@@ -191,11 +192,10 @@ def make_plot(id, data_start_date, data_end_date, local=False, test=False):
     ax2.set_ylabel('Pump runtime (min)', color='#D03232')
     for tl in ax2.get_yticklabels():
         tl.set_color('#D03232')
-    import matplotlib.dates as mdates
-    myFmt = mdates.DateFormatter('%b')
-    ax1.xaxis.set_major_formatter(myFmt)
-    plt.xticks([datetime.datetime(2015,i,1) for i in range(1,13,1)])
-
+    #import matplotlib.dates as mdates
+    #myFmt = mdates.DateFormatter('%b')
+    #ax1.xaxis.set_major_formatter(myFmt)
+    #plt.xticks([datetime.datetime(2015,i,1) for i in range(1,13,1)])
     fig.suptitle("Station %s, 2015" % id)
     return fig
 
