@@ -11,12 +11,9 @@ function getData(code, start, end){
 
     $.ajax("http://" +host + "/neighbors/"+station+"/"+depth, {
         success : function(data){
-            console.log(data);
             var codes = JSON.parse(data);
             var links = $("#links");
             $.each(links.children(), function(i, k){ k.remove(); });
-
-            console.log(codes);
 
             $.each(codes, function(i,k){
                 links.prepend('<a href="javascript:void(0);" onclick="getData('+k +','+start +','+ end+')">'+k +', '+'</a>');
@@ -27,7 +24,6 @@ function getData(code, start, end){
     $.ajax("http://" + host + "/avg/" + station + "/" + start_time + "/" + end_time, {
         success : function(data){
             var path = data;
-            console.log(data);
 
             $('#image').remove();
             $('#img').prepend($('<img>',{id:'image',src:data, width:"70%"}));
