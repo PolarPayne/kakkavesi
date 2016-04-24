@@ -26,9 +26,9 @@ def avg(code, start_date, end_date):
 
 @app.route("/neighbors/<code>/<int:depth>")
 def neighbors(code, depth=1):
-    ls = {}
+    ls = []
     for i in station_network.stations.neighbors(str(code), depth):
-        ls[str(i.code)] = {"name": i.name, "municipality": i.municipality}
+        ls.append(str(i.code))
     return json.dumps(ls)
 
 if __name__ == "__main__":
