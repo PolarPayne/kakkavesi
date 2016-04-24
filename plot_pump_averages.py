@@ -3,6 +3,8 @@ import datetime
 import re, time
 import matplotlib.pyplot as plt #python3-pyplot
 import weather
+import pickle
+import os
 from pump_area_precipitation import getRainInmm, listPumps
 
 apikey = ""
@@ -86,6 +88,10 @@ def _set_model_attrs(obj, keys, vals):
 
 def get_daily_pump_data(id, data_start_date, data_end_date):
     pump_data = []
+    filename = "tmp/pump_%s_%s_%s" % (id, data_start_date.strftime("%Y-%m-%d"), data_end_date.strftime("%Y-%m-%d"))
+    if os.path.exists(filename):
+        print("loaded pump")
+        return pickle.load(open(filename, 'rb'))
     icurrent = data_start_date
     if id not in listPumps(): raise "unknown id"
     while True:
@@ -110,10 +116,17 @@ def get_daily_pump_data(id, data_start_date, data_end_date):
 
     day_runtimes = [[key, min(1440, day_runtimes[key])] for key in day_runtimes.keys() if day_runtimes[key] != -1]
     day_runtimes.sort()
+    pickle.dump(day_runtimes,
+                open(filename,
+                     'wb'))
     return day_runtimes
 
 def get_daily_rainfall(id, data_start_date, data_end_date, local):
     day_rainfalls = []
+    filename = "tmp/rain_%s_%s_%s" % (id, data_start_date.strftime("%Y-%m-%d"), data_end_date.strftime("%Y-%m-%d"))
+    if os.path.exists(filename):
+        print("loaded rain")
+        return pickle.load(open(filename, 'rb'))
     if local:
         iday = data_start_date
         while iday < data_end_date:
@@ -129,6 +142,7 @@ def get_daily_rainfall(id, data_start_date, data_end_date, local):
         fmidata = [[z[0][0], sum(p[1] for p in z) / len(places)] for z in zip(*fmidata)]
         day_rainfalls = fmidata
     day_rainfalls.sort()
+    pickle.dump(day_rainfalls, open(filename, 'wb'))
     return day_rainfalls
 
 def persist_local_max(k, dates, values):
@@ -154,13 +168,23 @@ def make_plot(id, data_start_date, data_end_date, local=False, test=False):
     rainvals = [d[1] for d in day_rainfalls]
     datevals = [d[0] for d in day_rainfalls]
 
-    if test:
-        datevals, rainvals = persist_local_max(5, datevals, rainvals)
+    #if test:
+    #    datevals, rainvals = persist_local_max(5, datevals, rainvals)
 
     ax1.plot(datevals, rainvals, color='#008BCE')
-    k = 5
 
-    ax1.set_xlabel('Date')
+    r_pc25 = pctl(rainvals, 0.25)
+    r_pc50 = pctl(rainvals, 0.5)
+    r_pc75 = pctl(rainvals, 0.75)
+    r_pc90 = pctl(rainvals, 0.90)
+
+    if test:
+        ax1.plot([data_start_date, data_end_date], [r_pc90, r_pc90], ':', color='b')
+        #ax1.plot([data_start_date, data_end_date], [r_pc25, r_pc25], ':', color='b')
+        #ax1.plot([data_start_date, data_end_date], [r_pc50, r_pc50], '--', color='b')
+        #ax1.plot([data_start_date, data_end_date], [r_pc75, r_pc75], ':', color='b')
+
+    #ax1.set_xlabel('Date')
     # Make the y-axis label and tick labels match the line color.
     ax1.set_ylabel('Helsinki rainfall (mm)', color='#008BCE')
     for tl in ax1.get_yticklabels():
@@ -171,23 +195,29 @@ def make_plot(id, data_start_date, data_end_date, local=False, test=False):
     runtimevals = [d[1] for d in day_runtimes]
     runtimedayvals = [d[0] for d in day_runtimes]
 
-    pc25 = pctl(runtimevals, 0.25)
-    pc50 = pctl(runtimevals, 0.5)
-    pc75 = pctl(runtimevals, 0.75)
+    p_pc25 = pctl(runtimevals, 0.25)
+    p_pc50 = pctl(runtimevals, 0.5)
+    p_pc75 = pctl(runtimevals, 0.75)
+    p_pc90 = pctl(runtimevals, 0.90)
+    p_pc99 = pctl(runtimevals, 0.99)
+
+    runtimevals, runtimedayvals = zip(*[[v, d] for (v,d) in zip(runtimevals, runtimedayvals) if not (v > 1000 and v > p_pc99)])
 
     if test:
-        ax2.plot([data_start_date, pc25],[data_end_date, pc25],'.',color='b')
-        ax2.plot([data_start_date, pc50], [data_end_date, pc50], '--', color='b')
-        ax2.plot([data_start_date, pc75], [data_end_date, pc75], '.', color='b')
+        ax2.plot([data_start_date, data_end_date],[p_pc90, p_pc90],':',color='r')
+    #    ax2.plot([data_start_date, data_end_date],[p_pc25, p_pc25],':',color='r')
+    #    ax2.plot([data_start_date, data_end_date], [p_pc50, p_pc50], '--', color='r')
+    #    ax2.plot([data_start_date, data_end_date], [p_pc75, p_pc75], ':', color='r')
 
-    if test:
-        runtimevals, runtimedayvals = persist_local_max(5, datevals, rainvals)
+    #if test:
+    #    runtimedayvals, runtimevals = persist_local_max(5, runtimedayvals, runtimevals)
 
     ax2.plot(runtimedayvals, runtimevals, color='#D03232')
 
+    k=5
     running_avg = list(zip(*[runtimevals[i:len(runtimevals) - 2*k + i] for i in range(2*k)]))
     running_avg = [sum(v) / len(v) for v in running_avg]
-    ax2.plot(runtimedayvals[k:len(runtimedayvals) - k], running_avg, '--', color='#D24D3E')
+    ax2.plot(runtimedayvals[k:len(runtimedayvals) - k], running_avg, 'k:')#, color='#D24D3E')
 
     ax2.set_ylabel('Pump runtime (min)', color='#D03232')
     for tl in ax2.get_yticklabels():
@@ -197,10 +227,40 @@ def make_plot(id, data_start_date, data_end_date, local=False, test=False):
     #ax1.xaxis.set_major_formatter(myFmt)
     #plt.xticks([datetime.datetime(2015,i,1) for i in range(1,13,1)])
     fig.suptitle("Station %s, 2015" % id)
+
+    datevals, rainvals = persist_local_max(2, datevals, rainvals)
+    #runtimedayvals, runtimevals = persist_local_max(5, runtimedayvals, runtimevals)
+
+    corr = {}
+    for (day, val) in zip(runtimedayvals, runtimevals):
+        if day not in corr:
+            corr[day] = {}
+        corr[day]["pump"] = val
+    for (day, val) in zip(datevals, rainvals):
+        if day not in corr:
+            corr[day] = {}
+        corr[day]["rain"] = val
+    corrarr = []
+    for k in corr.keys():
+        v = corr[k]
+        if len(v.keys()) == 2:
+            corrarr.append([k, v["pump"], v["rain"]])
+    corrarr = [v for v in corrarr if v[1] > p_pc90 and v[2] > r_pc90]
+    ax2.plot([v[0] for v in corrarr], [v[1] for v in corrarr], 'k.')
+
+    #print(corrarr)
+    num_anomalies = len(corrarr)
+    avg_increase_over_median = sum(v[1]/p_pc50 for v in corrarr)
+
+    with open("tmp/station_anomalies", "a") as myfile:
+        s = "%s,%d,%.2f" % (id, num_anomalies, avg_increase_over_median)
+        print(s)
+        myfile.write(s+"\n")
+
     return fig
 
 if __name__ == "__main__":
-    p = make_plot("JVP1078", datetime.datetime(2015, 1, 1), datetime.datetime(2015, 12, 31), test=False)
+    p = make_plot("JVP1083", datetime.datetime(2015, 1, 1), datetime.datetime(2015, 12, 31), test=True)
     plt.show()
 
     if False:

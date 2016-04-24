@@ -28,8 +28,8 @@ def neighbors(code, depth=1):
     stations = station_network.StationNetwork()
     ls = []
     for i in stations.neighbors(code, depth):
-        ls.append(str(i.code))
-    return "[" + ",".join(ls) + "]"
+        ls.append('"' + str(i.code) +'"')
+    return '[' + ','.join(ls) + ']'
 
 if __name__ == "__main__":
     app.run(debug=True)
