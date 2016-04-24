@@ -75,3 +75,5 @@ if __name__ == "__main__":
     for i, j in data.items():
         ma = j["rrday"] if j["rrday"] > ma else ma
     print(ma)
+
+    data["2015-01-05"]["tmax"]

@@ -33,7 +33,8 @@ class PumpStation:
         self.code = code
 
     def __str__(self):
-        return "Pump station:\n\tCode: " + str(self.code)
+        return "Pump station:\n" \
+               "\tCode: {0}".format(self.code)
 
     def __hash__(self):
         return hash(self.code)
@@ -46,6 +47,6 @@ class PumpStation:
 if __name__ == "__main__":
     import networkx.drawing.nx_pydot as pydot
     a = StationNetwork()
-    for i in a.neighbors("1078", 1):
-        print(i)
+    for i in a.neighbors("VKM", 1):
+        print(i.code)
     #pydot.to_pydot(a.stations).write_png("hi.png", prog="fdp")

@@ -174,14 +174,15 @@ def make_plot(id, data_start_date, data_end_date, local=False):
     fig.suptitle("Station %s, 2015" % id)
     return fig
 
-p = make_plot("JVP1182", datetime.datetime(2015, 1, 1), datetime.datetime(2015, 12, 31))
-plt.show()
+if __name__ == "__main__":
+    p = make_plot("JVP1078", datetime.datetime(2015, 1, 1), datetime.datetime(2015, 12, 31))
+    plt.show()
 
-if False:
-    for id in listPumps():
-        try:
-            fig = make_plot(id, datetime.datetime(2015, 1, 1), datetime.datetime(2015, 6, 1))
-            fig.savefig(id + ".png")
-        except: continue
+    if False:
+        for id in listPumps():
+            try:
+                fig = make_plot(id, datetime.datetime(2015, 1, 1), datetime.datetime(2015, 6, 1))
+                fig.savefig(id + ".png")
+            except: continue
 
 
