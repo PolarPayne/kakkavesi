@@ -164,7 +164,7 @@ def make_plot(id, data_start_date, data_end_date, local=False, test=False):
     day_rainfalls = get_daily_rainfall(id, data_start_date, data_end_date, local)
 
     fig, ax1 = plt.subplots()
-    plt.xticks(rotation=70)
+    plt.xticks(rotation=25)
     rainvals = [d[1] for d in day_rainfalls]
     datevals = [d[0] for d in day_rainfalls]
 

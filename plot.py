@@ -48,7 +48,7 @@ norm_deviations = runningMeanFast([abs(k - average_deviation) for k in deviation
 # index = 0
 # pyplot.plot(pumps[index].pump_runtimes, label=pumps[index].name)
 pyplot.plot(averages_ra, label="avg")
-pyplot.plot(data_ra, label=pump.name)
+pyplot.plot(data_ra, label=pump.name + ", " + pump.station)
 pyplot.legend()
 pyplot.draw()
 pyplot.plot(norm_deviations, label= 'normalized deviation')
