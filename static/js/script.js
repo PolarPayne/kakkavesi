@@ -14,6 +14,8 @@ function getData(code, start, end){
             console.log(data);
             var codes = JSON.parse(data);
             var links = $("#links");
+            $.each(links.children(), function(i, k){ k.remove(); });
+
             console.log(codes);
 
             $.each(codes, function(i,k){

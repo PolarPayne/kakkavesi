@@ -1,5 +1,6 @@
-from flask import Flask, abort
+from flask import Flask, abort, g
 import datetime
+import json
 
 from plot_pump_averages import make_plot
 import station_network
@@ -25,11 +26,10 @@ def avg(code, start_date, end_date):
 
 @app.route("/neighbors/<code>/<int:depth>")
 def neighbors(code, depth=1):
-    stations = station_network.StationNetwork()
-    ls = []
-    for i in stations.neighbors(code, depth):
-        ls.append('"' + str(i.code) +'"')
-    return '[' + ','.join(ls) + ']'
+    ls = {}
+    for i in station_network.stations.neighbors(str(code), depth):
+        ls[str(i.code)] = {"name": i.name, "municipality": i.municipality}
+    return json.dumps(ls)
 
 if __name__ == "__main__":
     app.run(debug=True)
