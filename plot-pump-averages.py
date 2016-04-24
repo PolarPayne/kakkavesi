@@ -171,7 +171,7 @@ def make_plot(id, data_start_date, data_end_date, local=False):
     import matplotlib.dates as mdates
     myFmt = mdates.DateFormatter('%b')
     ax1.xaxis.set_major_formatter(myFmt)
-    plt.xticks([datetime.datetime(2015,i,15) for i in range(1,13,1)])
+    plt.xticks([datetime.datetime(2015,i,1) for i in range(1,13,1)])
 
     fig.suptitle("Station %s, 2015" % id)
     cache[id] = fig
