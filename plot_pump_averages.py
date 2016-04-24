@@ -84,14 +84,10 @@ def _set_model_attrs(obj, keys, vals):
     for i in range(0, len(keys)):
         setattr(obj, keys[i], vals[i])
 
-fmidata = None
-cache = {}
-
 def get_daily_pump_data(id, data_start_date, data_end_date):
-    global cache
-    if id in cache: return cache[id]
     pump_data = []
     icurrent = data_start_date
+    if id not in listPumps(): raise "unknown id"
     while True:
         inext = icurrent + datetime.timedelta(days=90)
         time.sleep(0.2)
@@ -114,11 +110,9 @@ def get_daily_pump_data(id, data_start_date, data_end_date):
 
     day_runtimes = [[key, min(1440, day_runtimes[key])] for key in day_runtimes.keys() if day_runtimes[key] != -1]
     day_runtimes.sort()
-    cache[id] = day_runtimes
     return day_runtimes
 
 def get_daily_rainfall(id, data_start_date, data_end_date, local):
-    global fmidata
     day_rainfalls = []
     if local:
         iday = data_start_date
@@ -127,28 +121,33 @@ def get_daily_rainfall(id, data_start_date, data_end_date, local):
             day_rainfalls.append([iday, min(50, getRainInmm(id, iday.year, iday.month, iday.day))])
             iday = inextday
     else:
-        global fmidata
-        if not fmidata:
-            fmidata = []
-            places = ["kumpula,Helsinki", "kaisaniemi,Helsinki", "harmaja,Helsinki", "tapiola,Espoo", "nuuksio,Espoo"]
-            for p in places:
-                data = weather.weather(apikey, data_start_date, data_end_date, place=p)
-                fmidata.append([[datetime.datetime.strptime(d, '%Y-%m-%d'), max(0, data[d]['rrday'])] for d in data])
-            fmidata = [[z[0][0], sum(p[1] for p in z) / len(places)] for z in zip(*fmidata)]
+        fmidata = []
+        places = ["kumpula,Helsinki", "kaisaniemi,Helsinki", "harmaja,Helsinki", "tapiola,Espoo", "nuuksio,Espoo"]
+        for p in places:
+            data = weather.weather(apikey, data_start_date, data_end_date, place=p)
+            fmidata.append([[datetime.datetime.strptime(d, '%Y-%m-%d'), max(0, data[d]['rrday'])] for d in data])
+        fmidata = [[z[0][0], sum(p[1] for p in z) / len(places)] for z in zip(*fmidata)]
         day_rainfalls = fmidata
     day_rainfalls.sort()
     return day_rainfalls
 
+def persist_local_max(k, dates, values):
+    values = [max(values[i - k:i + k]) for i in range(k, len(values) - k)]
+    dates = dates[k:-k]
+    return dates, values
+
+def rolling_average(k, dates, values):
+    values = [sum(values[i - k:i + k])/(2*k) for i in range(k, len(values) - k)]
+    dates = dates[k:-k]
+    return dates, values
+
+def pctl(values, pct):
+    sorted_vals = sorted(values)
+    return sorted_vals[int(len(sorted_vals)*pct)]
 
 def make_plot(id, data_start_date, data_end_date, local=False, test=False):
     day_runtimes = get_daily_pump_data(id, data_start_date, data_end_date)
     day_rainfalls = get_daily_rainfall(id, data_start_date, data_end_date, local)
-
-    #k=1
-    #for i in range(k, len(day_rainfalls)-k):
-    #    day_rainfalls[i][1] = sum([x[1] for x in day_rainfalls[i:i+k]])/k
-
-    #print(day_runtimes)
 
     fig, ax1 = plt.subplots()
     plt.xticks(rotation=70)
@@ -156,9 +155,7 @@ def make_plot(id, data_start_date, data_end_date, local=False, test=False):
     datevals = [d[0] for d in day_rainfalls]
 
     if test:
-        k = 2
-        rainvals = [max(rainvals[i - k:i + k]) for i in range(k, len(rainvals) - k)]
-        datevals = datevals[k:-k]
+        datevals, rainvals = persist_local_max(5, datevals, rainvals)
 
     ax1.plot(datevals, rainvals, color='#008BCE')
     k = 5
@@ -174,10 +171,17 @@ def make_plot(id, data_start_date, data_end_date, local=False, test=False):
     runtimevals = [d[1] for d in day_runtimes]
     runtimedayvals = [d[0] for d in day_runtimes]
 
+    pc25 = pctl(runtimevals, 0.25)
+    pc50 = pctl(runtimevals, 0.5)
+    pc75 = pctl(runtimevals, 0.75)
+
     if test:
-        k = 2
-        runtimevals = [max(runtimevals[i-k:i+k]) for i in range(k,len(runtimevals)-k)]
-        runtimedayvals = runtimedayvals[k:-k]
+        ax2.plot([data_start_date, pc25],[data_end_date, pc25],'.',color='b')
+        ax2.plot([data_start_date, pc50], [data_end_date, pc50], '--', color='b')
+        ax2.plot([data_start_date, pc75], [data_end_date, pc75], '.', color='b')
+
+    if test:
+        runtimevals, runtimedayvals = persist_local_max(5, datevals, rainvals)
 
     ax2.plot(runtimedayvals, runtimevals, color='#D03232')
 
@@ -188,16 +192,15 @@ def make_plot(id, data_start_date, data_end_date, local=False, test=False):
     ax2.set_ylabel('Pump runtime (min)', color='#D03232')
     for tl in ax2.get_yticklabels():
         tl.set_color('#D03232')
-    import matplotlib.dates as mdates
-    myFmt = mdates.DateFormatter('%b')
-    ax1.xaxis.set_major_formatter(myFmt)
-    plt.xticks([datetime.datetime(2015,i,1) for i in range(1,13,1)])
-
+    #import matplotlib.dates as mdates
+    #myFmt = mdates.DateFormatter('%b')
+    #ax1.xaxis.set_major_formatter(myFmt)
+    #plt.xticks([datetime.datetime(2015,i,1) for i in range(1,13,1)])
     fig.suptitle("Station %s, 2015" % id)
     return fig
 
 if __name__ == "__main__":
-    p = make_plot("JVP1078", datetime.datetime(2015, 1, 1), datetime.datetime(2015, 12, 31))
+    p = make_plot("JVP1078", datetime.datetime(2015, 1, 1), datetime.datetime(2015, 12, 31), test=False)
     plt.show()
 
     if False:
