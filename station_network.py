@@ -18,9 +18,6 @@ class StationNetwork:
 
             self.stations.add_edge(fr, to)
 
-        for i in self.stations.adjacency_iter():
-            pass
-
     def neighbors(self, node, depth, visited=[]):
         vis = visited.copy()
         if depth >= 0:

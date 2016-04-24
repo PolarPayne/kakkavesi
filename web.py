@@ -1,4 +1,4 @@
-from flask import Flask, abort, g
+from flask import Flask, abort, url_for
 import datetime
 import json
 
@@ -9,7 +9,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return "Kakkavettä!"
+    return app.send_static_file("index.html")
+    #return url_for("static", filename="index.html")
 
 @app.route("/avg/<code>/<start_date>/<end_date>")
 def avg(code, start_date, end_date):
