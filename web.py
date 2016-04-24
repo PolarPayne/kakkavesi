@@ -14,15 +14,15 @@ def avg(code, start_date, end_date):
     filename = "JVP" + code + "_" + start_date + "_" + end_date + ".png"
     from os import path
     if not path.exists("static/tmp/" + filename):
-        try:
+        #try:
             p = make_plot("JVP" + code, datetime.datetime.strptime(start_date, "%Y-%m-%d"), datetime.datetime.strptime(end_date, "%Y-%m-%d"))
             p.savefig("static/tmp/" + filename, dpi=300)
-        except:
-            abort(404)
-    return "static/tmp/" + filename
+        #except:
+        #    abort(404)
+    return "tmp/" + filename
     # return send_file("tmp/" + filename, mimetype='image/png')
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
 
 

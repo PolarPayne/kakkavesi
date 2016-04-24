@@ -5,12 +5,21 @@
     <title>Kakkavesi</title>
 </head>
 <body>
-    <label for="station">Pumppuasema</label>
-    <input type="text" id="station">
-    <label for="start_time">Alku</label>
-    <input type="text" id="start_time">
-    <label for="end_time">Loppu</label>
-    <input type="text" id="end_time">
+    <div>
+        <label for="station">Pumppuasema</label>
+        <input type="text" id="station">
+        <label for="start_time">Alku</label>
+        <input type="text" id="start_time">
+        <label for="end_time">Loppu</label>
+        <input type="text" id="end_time">
+        <button id="button" onclick="getData()">Hae tiedot</button>
+
+        <p id="loading" visible="false">Ladataan...</p>
+    </div>
+
+    <div id="img">
+
+    </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
     <script src="js/script.js"></script>
