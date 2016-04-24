@@ -85,14 +85,16 @@ def _set_model_attrs(obj, keys, vals):
         setattr(obj, keys[i], vals[i])
 
 fmidata = None
+cache = {}
 
 def make_plot(id, data_start_date, data_end_date, local=False):
+
+    if id in cache: return cache[id]
 
     day_rainfalls = []
 
     pump_data = []
     icurrent = data_start_date
-    inext = data_start_date
     while True:
         inext = icurrent + datetime.timedelta(days=90)
         time.sleep(0.5)
@@ -172,9 +174,10 @@ def make_plot(id, data_start_date, data_end_date, local=False):
     plt.xticks([datetime.datetime(2015,i,15) for i in range(1,13,1)])
 
     fig.suptitle("Station %s, 2015" % id)
+    cache[id] = fig
     return fig
 
-p = make_plot("JVP1182", datetime.datetime(2015, 1, 1), datetime.datetime(2015, 12, 31))
+p = make_plot("JVP1077", datetime.datetime(2015, 1, 1), datetime.datetime(2015, 12, 31))
 plt.show()
 
 if False:
