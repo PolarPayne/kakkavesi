@@ -46,8 +46,10 @@ class MesPumpHour:
 def get_targets():
     return _fetch_all_and_make_objects(Target, "SELECT * FROM [AWR].[dbo].[HSY_TARGETS]")
 
-def get_targets_with_pump_data(start, end):
-    targets =  _fetch_all_and_make_objects(Target, "SELECT * FROM [AWR].[dbo].[HSY_TARGETS]")
+def get_targets_with_pump_data(start, end, only_runtimes=False):
+    cols = "STATION, P1_RUN_TIME" if only_runtimes else "*"
+
+    targets =  _fetch_all_and_make_objects(Target, "SELECT "+ cols +" FROM [AWR].[dbo].[HSY_TARGETS]")
     pump_data = _get_pump_data_batch(start, end)
 
     for t in targets:

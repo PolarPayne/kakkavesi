@@ -6,8 +6,8 @@ import numpy as np
 def runningMeanFast(x, N):
     return np.convolve(x, np.ones((N,))/N)[(N-1):]
 
-start_time = "2015-11-09 00:00:00"
-end_time = "2015-11-15 00:00:00"
+start_time = "2015-11-01 00:00:00"
+end_time = "2015-12-01 00:00:00"
 
 pumps = [x for x in models.get_targets_with_pump_data(start_time, end_time)]
 
@@ -17,6 +17,7 @@ length = len(pumps[0].pump_data)
 
 for pump in pumps:
     data = models.interpolate_pump_runtimes(pump.pump_data)
+
     if len([x for x in data if x < 0.0 or x > 62 ]) == 0 and len(data) >= length:
         all_runtimes.append(data)
 
@@ -30,17 +31,17 @@ for i in range(length):
 pump = models.get_target("1078")
 data = models.interpolate_pump_runtimes([x.p1_run_time for x in pump.get_pump_data(start_time, end_time)])
 
-data_ra = runningMeanFast(data, 12)
-averages_ra = runningMeanFast(averages, 12)
+data_ra = runningMeanFast(data, 24)
+averages_ra = runningMeanFast(averages, 24)
 
 deviations = [abs(averages_ra[i] - data_ra[i]) for i in range(len(data))]
 
 data_average = sum(data)/len(data)
 
-data_deviations = runningMeanFast([abs(k - data_average) for k in data],12)
+data_deviations = runningMeanFast([abs(k - data_average) for k in data],24)
 
 average_deviation = (sum(deviations)/len(deviations))
-norm_deviations = [abs(k - average_deviation) for k in deviations]
+norm_deviations = runningMeanFast([abs(k - average_deviation) for k in deviations], 48)
 
 
 
@@ -49,10 +50,11 @@ norm_deviations = [abs(k - average_deviation) for k in deviations]
 pyplot.plot(averages_ra, label="avg")
 pyplot.plot(data_ra, label=pump.name)
 pyplot.legend()
-pyplot.show()
-pyplot.plot(norm_deviations, label= 'deviation from average deviation')
+pyplot.draw()
+pyplot.plot(norm_deviations, label= 'normalized deviation')
 pyplot.plot(deviations, label= 'absolute deviation')
 pyplot.legend()
-pyplot.show()
+pyplot.draw()
 
+pyplot.show()
 
