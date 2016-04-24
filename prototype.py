@@ -38,12 +38,12 @@ def build_prototype_week(activity, temperature, temperature_thresh, precip, prec
         "q : float in range of [0,100] (or sequence of floats)
         Percentile to compute which must be between 0 and 100 inclusive."
 
-
+        
     ---
     returns:
-        average, percentile
+        average, percentile, standard deviations
         each is of shape 7 * resolution, where resolution = number of data points in a day
-        the first 'resolution' number of points correspond to average/percentile for all Sunday data points
+        the first 'resolution' number of points correspond to average/percentile for all Monday data points
 
     ##################
 
@@ -57,6 +57,7 @@ def build_prototype_week(activity, temperature, temperature_thresh, precip, prec
    handle multiple activity vectors (i.e. multiple pump stations)
     
     '''
+    weeks = 171
     c = temperature
     c = c.astype('float').reshape(weeks, 7, 1) #reshape so can be multiplied
     act = activity
@@ -82,6 +83,7 @@ def build_prototype_week(activity, temperature, temperature_thresh, precip, prec
 
     avglist = []
     tails = []
+    stds = []
     for w in range(0, 7): #for each day of the week 
         for r in range(0, resolution): #for each of the datapoints
             t = act[:,w,r]
@@ -92,21 +94,24 @@ def build_prototype_week(activity, temperature, temperature_thresh, precip, prec
 
             t_nonans = t[~np.isnan(t)]
             tails.append(np.percentile(t_nonans, percentile))
+            stds.append(np.std(t_nonans))
 
-    return avglist, tails
+    return avglist, tails, stds
 
 #### the following code generates some test data
 #### with randomly chosen empty values
-weeks = 150
-dp = 12 #number of data points in one day
-act = np.random.randint(0, 100, weeks*7*dp).reshape(weeks, 7, dp)
-act_nans = np.random.choice([True, False], weeks*7*dp, p=[.2, .8]).reshape(weeks, 7, dp)
-act = act.astype('float')
-act[act_nans == True] = np.nan
+#weeks = 150
+#dp = 12 #number of data points in one day
+#act = np.random.randint(0, 100, weeks*7*dp).reshape(weeks, 7, dp)
+#act_nans = np.random.choice([True, False], weeks*7*dp, p=[.2, .8]).reshape(weeks, 7, dp)
+#act = act.astype('float')
+#act[act_nans == True] = np.nan
+#
+#c = np.random.randint(-5, 5, weeks*7).reshape(weeks, 7, 1)
+#prec = np.random.randint(0, 10, weeks*7).reshape(weeks, 7, 1)
+#a,s = build_prototype_week(act, c, -1, prec, 7, [2.5, 97.5])
+#print a, len(a)
+#print
+#print s
+        
 
-c = np.random.randint(-5, 5, weeks*7).reshape(weeks, 7, 1)
-prec = np.random.randint(0, 10, weeks*7).reshape(weeks, 7, 1)
-a,s = build_prototype_week(act, c, -1, prec, 7, [2.5, 97.5])
-print a, len(a)
-print
-print s
