@@ -11,14 +11,13 @@ def index():
 
 @app.route("/avg/<code>/<start_date>/<end_date>")
 def avg(code, start_date, end_date):
-    filename = code + "_" + start_date + "_" + end_date + ".png"
+    filename = "JVP" + code + "_" + start_date + "_" + end_date + ".png"
     from os import path
     if not path.exists("tmp/" + filename):
         try:
-            p = make_plot(code, datetime.datetime.strptime(start_date, "%Y-%m-%d"), datetime.datetime.strptime(end_date, "%Y-%m-%d"))
-            p.savefig("tmp/" + filename)
+            p = make_plot("JVP" + code, datetime.datetime.strptime(start_date, "%Y-%m-%d"), datetime.datetime.strptime(end_date, "%Y-%m-%d"))
+            p.savefig("tmp/" + filename, dpi=300)
         except:
-            print("abort", code, start_date, end_date)
             abort(404)
     return send_file("tmp/" + filename, mimetype='image/png')
 
