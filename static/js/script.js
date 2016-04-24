@@ -8,12 +8,19 @@ function getData(code, start, end){
     var station = code ? code : $("#station").val();
     var start_time = start ? start : $("#start_time").val();
     var end_time = end ? end : $("#end_time").val();
+
+    $("#station").val(station);
+    $("#start_time").val(start_time);
+    $("#end_time").val(end_time);
+
     $("#loading").show();
     $("#error").hide();
 
     $.ajax("http://" +host + "/neighbors/"+station+"/"+depth, {
         success : function(data){
             var codes = JSON.parse(data);
+
+            console.log(codes)
             var links = $("#links");
             $.each(links.children(), function(i, k){ k.remove(); });
 
@@ -30,7 +37,6 @@ function getData(code, start, end){
             $('#image').remove();
             $('#img').prepend($('<img>',{id:'image',src:data, width:"70%"}));
             $("#loading").hide();
-
         },
         error: function(){
             console.log("Äh!");
