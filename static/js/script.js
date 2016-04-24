@@ -2,12 +2,14 @@ host  = window.location.host;
 depth = 2;
 
 $("#loading").hide();
+$("#error").hide();
 
 function getData(code, start, end){
     var station = code ? code : $("#station").val();
     var start_time = start ? start : $("#start_time").val();
     var end_time = end ? end : $("#end_time").val();
     $("#loading").show();
+    $("#error").hide();
 
     $.ajax("http://" +host + "/neighbors/"+station+"/"+depth, {
         success : function(data){
@@ -32,6 +34,9 @@ function getData(code, start, end){
         },
         error: function(){
             console.log("Äh!");
+            
+            $("#loading").hide();
+            $("#error").show();
         }
     });
 }
