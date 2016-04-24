@@ -87,22 +87,19 @@ def _set_model_attrs(obj, keys, vals):
 fmidata = None
 cache = {}
 
-def make_plot(id, data_start_date, data_end_date, local=False):
-
+def get_daily_pump_data(id, data_start_date, data_end_date):
+    global cache
     if id in cache: return cache[id]
-
-    day_rainfalls = []
-
     pump_data = []
     icurrent = data_start_date
     while True:
         inext = icurrent + datetime.timedelta(days=90)
-        time.sleep(0.5)
+        time.sleep(0.2)
         if inext > data_end_date: inext = data_end_date
         pump_data += get_pump_data_between(id, icurrent, inext)
         icurrent = inext
         if icurrent == data_end_date: break
-    hour_runtimes = [[d.sts, max(0,d.p1_run_time)] for d in pump_data if d.p1_run_time]
+    hour_runtimes = [[d.sts, max(0, d.p1_run_time)] for d in pump_data if d.p1_run_time]
     day_runtimes = {}
 
     for data in hour_runtimes:
@@ -115,9 +112,14 @@ def make_plot(id, data_start_date, data_end_date, local=False):
         if day_runtimes[day_dt] == -1: break
         day_runtimes[day_dt] += data[1]
 
-    day_runtimes = [[key, min(1440,day_runtimes[key])] for key in day_runtimes.keys() if day_runtimes[key] != -1]
+    day_runtimes = [[key, min(1440, day_runtimes[key])] for key in day_runtimes.keys() if day_runtimes[key] != -1]
     day_runtimes.sort()
+    cache[id] = day_runtimes
+    return day_runtimes
 
+def get_daily_rainfall(id, data_start_date, data_end_date, local):
+    global fmidata
+    day_rainfalls = []
     if local:
         iday = data_start_date
         while iday < data_end_date:
@@ -132,21 +134,32 @@ def make_plot(id, data_start_date, data_end_date, local=False):
             for p in places:
                 data = weather.weather(apikey, data_start_date, data_end_date, place=p)
                 fmidata.append([[datetime.datetime.strptime(d, '%Y-%m-%d'), max(0, data[d]['rrday'])] for d in data])
-            fmidata = [[z[0][0], sum(p[1] for p in z)/len(places)] for z in zip(*fmidata)]
+            fmidata = [[z[0][0], sum(p[1] for p in z) / len(places)] for z in zip(*fmidata)]
         day_rainfalls = fmidata
-
     day_rainfalls.sort()
+    return day_rainfalls
 
-    k=1
-    for i in range(k, len(day_rainfalls)-k):
-        day_rainfalls[i][1] = sum([x[1] for x in day_rainfalls[i:i+k]])/k
 
-    print(day_runtimes)
+def make_plot(id, data_start_date, data_end_date, local=False, test=False):
+    day_runtimes = get_daily_pump_data(id, data_start_date, data_end_date)
+    day_rainfalls = get_daily_rainfall(id, data_start_date, data_end_date, local)
+
+    #k=1
+    #for i in range(k, len(day_rainfalls)-k):
+    #    day_rainfalls[i][1] = sum([x[1] for x in day_rainfalls[i:i+k]])/k
+
+    #print(day_runtimes)
 
     fig, ax1 = plt.subplots()
     plt.xticks(rotation=70)
     rainvals = [d[1] for d in day_rainfalls]
     datevals = [d[0] for d in day_rainfalls]
+
+    if test:
+        k = 2
+        rainvals = [max(rainvals[i - k:i + k]) for i in range(k, len(rainvals) - k)]
+        datevals = datevals[k:-k]
+
     ax1.plot(datevals, rainvals, color='#008BCE')
     k = 5
 
@@ -160,7 +173,14 @@ def make_plot(id, data_start_date, data_end_date, local=False):
     ax2 = ax1.twinx()
     runtimevals = [d[1] for d in day_runtimes]
     runtimedayvals = [d[0] for d in day_runtimes]
+
+    if test:
+        k = 2
+        runtimevals = [max(runtimevals[i-k:i+k]) for i in range(k,len(runtimevals)-k)]
+        runtimedayvals = runtimedayvals[k:-k]
+
     ax2.plot(runtimedayvals, runtimevals, color='#D03232')
+
     running_avg = list(zip(*[runtimevals[i:len(runtimevals) - 2*k + i] for i in range(2*k)]))
     running_avg = [sum(v) / len(v) for v in running_avg]
     ax2.plot(runtimedayvals[k:len(runtimedayvals) - k], running_avg, '--', color='#D24D3E')
@@ -174,10 +194,9 @@ def make_plot(id, data_start_date, data_end_date, local=False):
     plt.xticks([datetime.datetime(2015,i,1) for i in range(1,13,1)])
 
     fig.suptitle("Station %s, 2015" % id)
-    cache[id] = fig
     return fig
 
-p = make_plot("JVP1077", datetime.datetime(2015, 1, 1), datetime.datetime(2015, 12, 31))
+p = make_plot("JVP1083", datetime.datetime(2015, 1, 1), datetime.datetime(2015, 12, 31), test=True)
 plt.show()
 
 if False:

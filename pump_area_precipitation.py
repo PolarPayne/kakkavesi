@@ -24,7 +24,7 @@ connection = pymssql.connect(_SERVER, _USER, _PASSWORD)
 
 cursor = connection.cursor()
 cursor.execute("SELECT * FROM [AWR].[dbo].[HSY_RAINFALL_1H]")
-print(cursor.description)
+#print(cursor.description)
 rows = cursor.fetchall()
 
 #print(len(rows))
