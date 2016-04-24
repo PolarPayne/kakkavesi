@@ -3,3 +3,4 @@ ravake/
 __pycache__/
 example2_graph.png
 fmi-apikey
+tmp/
